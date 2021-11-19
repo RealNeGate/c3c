@@ -31,7 +31,7 @@ static void global_context_clear_errors(void)
 void compiler_init(const char *std_lib_dir)
 {
 	DEBUG_LOG("Version: %s", COMPILER_VERSION);
-
+	
 	// Skip library detection.
 	//compiler.lib_dir = find_lib_dir();
 	//DEBUG_LOG("Found std library: %s", compiler.lib_dir);
@@ -90,7 +90,7 @@ void compiler_parse(void)
 		bool loaded = false;
 		File *file = source_file_load(global_context.sources[i], &loaded);
 		if (loaded) continue;
-
+		
 		global_context_clear_errors();
 		parse_file(file);
 	}
@@ -112,7 +112,7 @@ typedef struct CompileData_
 void thread_compile_task(void *compiledata)
 {
 	CompileData *data = compiledata;
-	data->object_name = llvm_codegen(data->context);
+	data->object_name = tinybackend_codegen(data->context);
 }
 
 void sema_analyze_stage(Module *module, AnalysisStage stage)
@@ -123,25 +123,25 @@ void sema_analyze_stage(Module *module, AnalysisStage stage)
 		switch (module->stage)
 		{
 			case ANALYSIS_NOT_BEGUN:
-				UNREACHABLE
-			case ANALYSIS_IMPORTS:
-				sema_analysis_pass_process_imports(module);
-				break;
+			UNREACHABLE
+				case ANALYSIS_IMPORTS:
+			sema_analysis_pass_process_imports(module);
+			break;
 			case ANALYSIS_REGISTER_GLOBALS:
-				sema_analysis_pass_register_globals(module);
-				break;
+			sema_analysis_pass_register_globals(module);
+			break;
 			case ANALYSIS_CONDITIONAL_COMPILATION:
-				sema_analysis_pass_conditional_compilation(module);
-				break;
+			sema_analysis_pass_conditional_compilation(module);
+			break;
 			case ANALYSIS_DECLS:
-				sema_analysis_pass_decls(module);
-				break;
+			sema_analysis_pass_decls(module);
+			break;
 			case ANALYSIS_CT_ASSERT:
-				sema_analysis_pass_ct_assert(module);
-				break;
+			sema_analysis_pass_ct_assert(module);
+			break;
 			case ANALYSIS_FUNCTIONS:
-				sema_analysis_pass_functions(module);
-				break;
+			sema_analysis_pass_functions(module);
+			break;
 		}
 		if (global_context.errors_found) return;
 	}
@@ -161,24 +161,24 @@ static void register_generic_decls(Module *module, Decl **decls)
 			case DECL_IMPORT:
 			case DECL_LABEL:
 			case DECL_CT_ASSERT:
-				continue;
+			continue;
 			case DECL_ATTRIBUTE:
-				break;
+			break;
 			case DECL_CT_CASE:
-				register_generic_decls(module, decl->ct_case_decl.body);
-				continue;
+			register_generic_decls(module, decl->ct_case_decl.body);
+			continue;
 			case DECL_CT_ELIF:
-				register_generic_decls(module, decl->ct_elif_decl.then);
-				continue;
+			register_generic_decls(module, decl->ct_elif_decl.then);
+			continue;
 			case DECL_CT_ELSE:
-				register_generic_decls(module, decl->ct_else_decl);
-				continue;
+			register_generic_decls(module, decl->ct_else_decl);
+			continue;
 			case DECL_CT_IF:
-				register_generic_decls(module, decl->ct_if_decl.then);
-				continue;
+			register_generic_decls(module, decl->ct_if_decl.then);
+			continue;
 			case DECL_CT_SWITCH:
-				register_generic_decls(module, decl->ct_switch_decl.cases);
-				continue;
+			register_generic_decls(module, decl->ct_switch_decl.cases);
+			continue;
 			case DECL_MACRO:
 			case DECL_DEFINE:
 			case DECL_DISTINCT:
@@ -191,7 +191,7 @@ static void register_generic_decls(Module *module, Decl **decls)
 			case DECL_UNION:
 			case DECL_VAR:
 			case DECL_BITSTRUCT:
-				break;
+			break;
 		}
 		if (decl->visibility > VISIBLE_MODULE)
 		{
@@ -199,7 +199,7 @@ static void register_generic_decls(Module *module, Decl **decls)
 		}
 		stable_set(&module->symbols, decl->name, decl);
 	}
-
+	
 }
 static void analyze_generic_module(Module *module)
 {
@@ -291,9 +291,9 @@ void compiler_compile(void)
 	setup_int_define("COMPILER_OPT_LEVEL", (int)active_target.optimization_level, type_int);
 	setup_int_define("COMPILER_SIZE_OPT_LEVEL", (int)active_target.size_optimization_level, type_int);
 	setup_bool_define("COMPILER_SAFE_MODE", active_target.feature.safe_mode);
-
+	
 	global_context_clear_errors();
-
+	
 	if (global_context.lib_dir)
 	{
 		file_add_wildcard_files(&global_context.sources, global_context.lib_dir, true);
@@ -306,14 +306,14 @@ void compiler_compile(void)
 		if (loaded) continue;
 		if (!parse_file(file)) has_error = true;
 	}
-
+	
 	if (has_error) exit(EXIT_FAILURE);
-
+	
 	global_context.std_module_path = (Path) { .module = kw_std, .span = INVALID_RANGE, .len = strlen(kw_std) };
 	global_context.std_module = (Module){ .name = &global_context.std_module_path };
 	global_context.std_module.stage = ANALYSIS_LAST;
 	stable_init(&global_context.std_module.symbols, 0x10000);
-
+	
 	if (!global_context.module_list)
 	{
 		if (global_context.errors_found) exit(EXIT_FAILURE);
@@ -327,10 +327,10 @@ void compiler_compile(void)
 	{
 		analyze_to_stage(stage);
 	}
-
+	
 	Module **modules = global_context.module_list;
 	unsigned module_count = vec_size(modules);
-
+	
 	if (module_count > MAX_MODULES)
 	{
 		error_exit("Too many modules.");
@@ -339,7 +339,7 @@ void compiler_compile(void)
 	{
 		error_exit("No module to compile.");
 	}
-
+	
 	if (active_target.output_headers)
 	{
 		for (unsigned i = 0; i < module_count; i++)
@@ -348,17 +348,17 @@ void compiler_compile(void)
 		}
 		return;
 	}
-
-	llvm_codegen_setup();
-
+	
+	tinybackend_codegen_setup();
+	
 	void **gen_contexts = NULL;
-
+	
 	for (unsigned i = 0; i < module_count; i++)
 	{
-		void *result = llvm_gen(modules[i]);
+		void *result = tinybackend_gen(modules[i]);
 		if (result) vec_add(gen_contexts, result);
 	}
-
+	
 	if (debug_stats)
 	{
 		printf("-- AST/EXPR INFO -- \n");
@@ -370,19 +370,19 @@ void compiler_compile(void)
 		printf(" * Sourceloc memory use: %llukb\n", (unsigned long long)(sourceloc_arena.allocated) / 1024);
 		printf(" * Token data memory use: %llukb\n", (unsigned long long)(tokdata_arena.allocated) / 1024);
 	}
-
+	
 	ast_arena_free();
 	decl_arena_free();
 	expr_arena_free();
 	type_info_arena_free();
 	sourceloc_arena_free();
 	tokdata_arena_free();
-
+	
 	if (debug_stats) print_arena_status();
-
-
+	
+	
 	bool create_exe = !active_target.no_link && !active_target.test_output && (active_target.type == TARGET_TYPE_EXECUTABLE || active_target.type == TARGET_TYPE_TEST);
-
+	
 	size_t output_file_count = vec_size(gen_contexts);
 	if (output_file_count > MAX_OUTPUT_FILES)
 	{
@@ -392,30 +392,30 @@ void compiler_compile(void)
 	{
 		error_exit("No output files found.");
 	}
-
+	
 	CompileData *compile_data = malloc(sizeof(CompileData) * output_file_count);
 	const char **obj_files = malloc(sizeof(char*) * output_file_count);
-
+	
 	TaskQueueRef queue = taskqueue_create(16);
-
+	
 	for (unsigned i = 0; i < output_file_count; i++)
 	{
 		compile_data[i] = (CompileData) { .context = gen_contexts[i] };
 		compile_data[i].task = (Task) { &thread_compile_task, &compile_data[i] };
 		taskqueue_add(queue, &compile_data[i].task);
 	}
-
+	
 	taskqueue_wait_for_completion(queue);
 	taskqueue_destroy(queue);
-
+	
 	for (unsigned i = 0; i < output_file_count; i++)
 	{
 		obj_files[i] = compile_data[i].object_name;
 		assert(obj_files[i] || !create_exe);
 	}
-
+	
 	free(compile_data);
-
+	
 	if (create_exe)
 	{
 		if (active_target.arch_os_target == ARCH_OS_TARGET_DEFAULT)
@@ -436,7 +436,7 @@ void compiler_compile(void)
 			system(strformat("./%s", active_target.name));
 		}
 	}
-
+	
 	free_arena();
 	exit(EXIT_SUCCESS);
 }
@@ -499,7 +499,7 @@ void compile()
 	global_context.sources = active_target.sources;
 	symtab_init(active_target.symtab_size ? active_target.symtab_size : 64 * 1024);
 	target_setup(&active_target);
-
+	
 	if (!vec_size(active_target.sources)) error_exit("No files to compile.");
 	if (active_target.lex_only)
 	{
@@ -536,7 +536,7 @@ Module *compiler_find_or_create_module(Path *module_name, TokenId *parameters, b
 {
 	Module *module = global_context_find_module(module_name->module);
 	if (module) return module;
-
+	
 	DEBUG_LOG("Creating module %s.", module_name->module);
 	// Set up the module.
 	module = CALLOCS(Module);
@@ -555,7 +555,7 @@ Module *compiler_find_or_create_module(Path *module_name, TokenId *parameters, b
 	{
 		vec_add(global_context.module_list, module);
 	}
-
+	
 	return module;
 }
 

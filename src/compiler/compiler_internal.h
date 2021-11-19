@@ -98,7 +98,7 @@ typedef enum
 	CONST_INIT_ARRAY,
 	CONST_INIT_ARRAY_FULL,
 	CONST_INIT_ARRAY_VALUE,
-	} ConstInitType;
+} ConstInitType;
 
 
 typedef struct ConstInitializer_
@@ -458,7 +458,7 @@ typedef struct
 		bool attr_extname : 1;
 		bool attr_naked : 1;
 	};
-
+	
 	TypeInfo *type_parent;
 	FunctionSignature function_signature;
 	Ast *body;
@@ -1218,7 +1218,7 @@ typedef struct
 			const char *directive_name;
 			TokenId rest_of_line;
 		} generic;
-
+		
 	};
 } AstDocDirective;
 
@@ -1267,16 +1267,16 @@ typedef struct Module_
 {
 	Path *name;
 	TokenId *parameters;
-
+	
 	bool is_external : 1;
 	bool is_c_library : 1;
 	bool is_exported : 1;
 	bool is_generic : 1;
 	bool is_private : 1;
 	AnalysisStage stage : 6;
-
+	
 	Ast **files; // Asts
-
+	
 	Decl** method_extensions;
 	Decl** generic_cache;
 	STable symbols;
@@ -1515,7 +1515,7 @@ typedef struct ABIArgInfo_
 			Type *type;
 		} indirect;
 	};
-
+	
 } ABIArgInfo;
 
 extern GlobalContext global_context;
@@ -1718,22 +1718,22 @@ static inline bool type_may_negate(Type *type)
 	switch (type->type_kind)
 	{
 		case TYPE_VECTOR:
-			type = type->vector.base;
-			goto RETRY;
+		type = type->vector.base;
+		goto RETRY;
 		case ALL_FLOATS:
 		case ALL_INTS:
-			return true;
+		return true;
 		case TYPE_DISTINCT:
-			type = type->decl->distinct_decl.base_type;
-			goto RETRY;
+		type = type->decl->distinct_decl.base_type;
+		goto RETRY;
 		case TYPE_TYPEDEF:
-			type = type->canonical;
-			goto RETRY;
+		type = type->canonical;
+		goto RETRY;
 		case TYPE_FAILABLE:
-			type = type->failable;
-			goto RETRY;
+		type = type->failable;
+		goto RETRY;
 		default:
-			return false;
+		return false;
 	}
 }
 
@@ -1751,6 +1751,10 @@ CastKind cast_to_bool_kind(Type *type);
 const char *llvm_codegen(void *context);
 void *llvm_gen(Module *module);
 void llvm_codegen_setup();
+
+const char *tinybackend_codegen(void *context);
+void *tinybackend_gen(Module *module);
+void tinybackend_codegen_setup();
 
 void header_gen(Module *module);
 
@@ -1799,15 +1803,15 @@ static inline bool decl_var_is_assignable(Decl *decl)
 		case VARDECL_LOCAL_CT:
 		case VARDECL_LOCAL_CT_TYPE:
 		case VARDECL_UNWRAPPED:
-			return true;
+		return true;
 		case VARDECL_BITMEMBER:
 		case VARDECL_CONST:
 		case VARDECL_MEMBER:
 		case VARDECL_PARAM_EXPR:
-			return false;
+		return false;
 		case VARDECL_REWRAPPED:
 		case VARDECL_ERASE:
-			UNREACHABLE
+		UNREACHABLE
 	}
 }
 static inline Decl *decl_flatten(Decl *decl)
@@ -2099,8 +2103,8 @@ static inline bool type_is_pointer_sized(Type *type)
 }
 
 #define DECL_TYPE_KIND_REAL(k_, t_) \
- TypeKind k_ = (t_)->type_kind; \
- if (k_ == TYPE_TYPEDEF) k_ = (t_)->canonical->type_kind;
+TypeKind k_ = (t_)->type_kind; \
+if (k_ == TYPE_TYPEDEF) k_ = (t_)->canonical->type_kind;
 
 #define IS_FAILABLE(element_) (type_is_failable((element_)->type))
 #define type_is_failable(type_) ((type_)->type_kind == TYPE_FAILABLE || (type_)->canonical->type_kind == TYPE_FAILABLE_ANY)
@@ -2259,16 +2263,16 @@ static inline Type *type_flatten_distinct_failable(Type *type)
 		switch (type->type_kind)
 		{
 			case TYPE_TYPEDEF:
-				type = type->canonical;
-				continue;
+			type = type->canonical;
+			continue;
 			case TYPE_FAILABLE:
-				type = type->failable;
-				continue;
+			type = type->failable;
+			continue;
 			case TYPE_DISTINCT:
-				type = type->decl->distinct_decl.base_type;
-				continue;
+			type = type->decl->distinct_decl.base_type;
+			continue;
 			default:
-				return type;
+			return type;
 		}
 	}
 }
@@ -2345,9 +2349,9 @@ static inline bool type_kind_is_derived(TypeKind kind)
 		case TYPE_ARRAY:
 		case TYPE_POINTER:
 		case TYPE_SUBARRAY:
-			return true;
+		return true;
 		default:
-			return false;
+		return false;
 	}
 }
 
@@ -2358,10 +2362,10 @@ static inline bool type_is_structlike(Type *type)
 	{
 		case TYPE_UNION:
 		case TYPE_STRUCT:
-			return true;
+		return true;
 		default:
-			return false;
-
+		return false;
+		
 	}
 }
 
@@ -2400,7 +2404,7 @@ static inline bool decl_is_user_defined_type(Decl *decl)
 {
 	DeclKind kind = decl->decl_kind;
 	return (kind == DECL_UNION) | (kind == DECL_STRUCT) | (kind == DECL_BITSTRUCT)
-			| (kind == DECL_ENUM) | (kind == DECL_DISTINCT);
+		| (kind == DECL_ENUM) | (kind == DECL_DISTINCT);
 }
 
 static inline DeclKind decl_from_token(TokenType type)

@@ -111,6 +111,7 @@ add_executable(c3c
         src/compiler/compiler.h
         src/compiler/types.c
         src/compiler/module.c
+        src/compiler/tb_codegen.c
         src/compiler/llvm_codegen.c
         src/utils/stringutils.c
         src/utils/find_msvc.c
@@ -162,6 +163,9 @@ endif()
 target_include_directories(c3c PRIVATE
         "${CMAKE_SOURCE_DIR}/src/")
 
+target_include_directories(c3c PRIVATE
+        "${CMAKE_SOURCE_DIR}/tb/")
+
 target_include_directories(c3c_wrappers PRIVATE
         "${CMAKE_SOURCE_DIR}/wrapper/src/")
 
@@ -172,6 +176,7 @@ if(UNIX)
     message(STATUS "adding unix link params")
     target_link_libraries(c3c_wrappers ${llvm_libs} ${lld_libs})
     target_link_libraries(c3c m ${llvm_libs} c3c_wrappers ${lld_libs})
+	target_link_libraries(c3c ${CMAKE_SOURCE_DIR}/tinybackend.a)
 else()
     # todo: maybe get this from llvm-config somehow? it should be in LLVM_DIR\..\..\..\bin I think.
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -LIBPATH:C:\\llvm\\llvm\\build\\Release\\lib") # needed for lldCommon.lib
@@ -179,6 +184,7 @@ else()
     message(STATUS "${LLVM_LIBPATH}")
     target_link_libraries(c3c debug ${llvm_libs} c3c_wrappers lldCommon lldCore lldCOFF lldWASM lldMinGW lldELF lldDriver lldReaderWriter lldMachO lldYAML)
     target_link_libraries(c3c optimized ${llvm_libs} c3c_wrappers lldCommon lldCore lldCOFF lldWASM lldMinGW lldELF lldDriver lldReaderWriter lldMachO lldYAML)
+	# TODO: implement TB static lib for windows
 endif()
 
 if (WIN32)
